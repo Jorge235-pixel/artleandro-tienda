@@ -1,1 +1,63 @@
+{% extends 'base.html' %}{% block body %}
+<section class="hero pro-hero">
+  <div class="hero-copy">
+    <span class="eyebrow">Tienda virtual de moda</span>
+    <h1>Prendas artísticas con compra fácil y atención directa.</h1>
+    <p>Compra por carrito, WhatsApp o registra tu pedido con pago por Nequi, PayPal o transferencia bancaria. Envíos y atención desde {{cfg.get('ubicacion','Cataluña - España')}}.</p>
+    <div class="hero-actions">
+      <a class="btn" href="#productos">Ver catálogo</a>
+      <a class="btn ghost" href="mailto:{{cfg.get('correo_tienda','contacto@artleandro.com')}}">📧 Escribir al correo</a>
+      <a class="btn whatsapp-btn" href="https://wa.me/{{cfg.get('telefono_whatsapp','34638067232')}}?text=Hola%20Art%20Leandro%2C%20quiero%20informaci%C3%B3n%20de%20sus%20prendas" target="_blank">💬 WhatsApp</a>
+    </div>
+    <div class="trust"><span>🛍️ Carrito fácil</span><span>📏 Tallas S · M · L · XL</span><span>📦 Control de pedidos</span><span>📍 {{cfg.get('ubicacion','Cataluña - España')}}</span></div>
+  </div>
+  <div class="hero-card"><img src="{{ url_for('static',filename='uploads/logos/logo.jpg') }}" alt="Logo Art Leandro"></div>
+</section>
 
+{% if destacados %}
+<section class="featured"><div class="section-head"><span class="eyebrow">Destacados</span><h2>Prendas recomendadas</h2></div><div class="mini-grid">{% for d in destacados %}<a class="mini" href="#p{{d.id}}"><img src="{{ url_for('static',filename='uploads/productos/'+d.imagen) if d.imagen else url_for('static',filename='uploads/logos/logo.jpg') }}"><span>{{d.nombre}}</span><b>{{d.precio|money}}</b></a>{% endfor %}</div></section>
+{% endif %}
+
+<section id="colecciones" class="shop-toolbar">
+  <div><h2>Catálogo de productos</h2><p>Filtra por colección o compra directamente desde cada prenda.</p></div>
+  <form><select name="coleccion" onchange="this.form.submit()"><option value="">Todas las colecciones</option>{% for c in colecciones %}<option value="{{c.id}}" {% if coleccion_sel==c.id|string %}selected{% endif %}>{{c.nombre}}</option>{% endfor %}</select></form>
+  <a class="cart" href="{{url_for('ver_carrito')}}">🛒 Carrito: {{cart_count}}</a>
+</section>
+
+<section id="productos" class="grid product-grid">
+{% for p in productos %}
+  <article class="card product-card" id="p{{p.id}}">
+    <div class="photo-wrap"><img src="{{ url_for('static',filename='uploads/productos/'+p.imagen) if p.imagen else url_for('static',filename='uploads/logos/logo.jpg') }}"><span class="stock-badge">Stock {{p.stock}}</span>{% if p.destacado %}<span class="featured-badge">Destacado</span>{% endif %}</div>
+    <div class="pad">
+      <span class="tag">{{p.coleccion or 'Sin colección'}}</span>
+      <h3>{{p.nombre}}</h3>
+      <p class="desc">{{p.descripcion}}</p>
+      <div class="details"><span>🎨 {{p.color or 'Color por definir'}}</span><span>📏 {{p.talla or 'S,M,L,XL'}}</span></div>
+      <div class="meta"><b>{{p.precio|money}}</b></div>
+      <form class="buy-form" action="{{url_for('agregar',id=p.id)}}" method="post">
+        <label class="size-field"><span>Talla</span><select name="talla" required>{% set tallas = (p.talla if p.talla else 'S,M,L,XL').replace('/', ',').replace('-', ',').split(',') %}{% for t in tallas %}{% if t.strip() %}<option value="{{t.strip()}}">{{t.strip()}}</option>{% endif %}{% endfor %}</select></label>
+        <label class="qty-field"><span>Cantidad</span><input type="number" name="cantidad" value="1" min="1"></label>
+        <button>Agregar al carrito</button>
+      </form>
+      <a class="whatsapp-product" href="https://wa.me/{{cfg.get('telefono_whatsapp','34638067232')}}" target="_blank" data-product="{{p.nombre}}" data-price="{{p.precio|money}}">💬 Comprar este producto por WhatsApp</a>
+    </div>
+  </article>
+{% else %}<div class="panel empty"><h2>No hay productos activos</h2><p>Ingresa al panel administrador y activa o crea productos.</p></div>{% endfor %}
+</section>
+
+<script>
+(function(){
+  const phone = '{{cfg.get('telefono_whatsapp','34638067232')}}';
+  function updateWhatsApp(card){
+    const link = card.querySelector('.whatsapp-product'); if(!link) return;
+    const product = link.dataset.product || 'Producto Art Leandro';
+    const price = link.dataset.price || '';
+    const talla = card.querySelector('select[name="talla"]')?.value || 'Por confirmar';
+    const cantidad = card.querySelector('input[name="cantidad"]')?.value || '1';
+    const msg = `Hola Art Leandro, quiero comprar este producto:\n\nProducto: ${product}\nTalla: ${talla}\nCantidad: ${cantidad}\nPrecio: ${price}\n\nQuedo atento(a) para confirmar disponibilidad, envío y forma de pago.`;
+    link.href = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+  }
+  document.querySelectorAll('.product-card').forEach(card => { updateWhatsApp(card); card.querySelectorAll('select[name="talla"], input[name="cantidad"]').forEach(el => { el.addEventListener('change', () => updateWhatsApp(card)); el.addEventListener('input', () => updateWhatsApp(card)); }); });
+})();
+</script>
+{% endblock %}

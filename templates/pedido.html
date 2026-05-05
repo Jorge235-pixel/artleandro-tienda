@@ -1,0 +1,11 @@
+{% extends 'base.html' %}{% block body %}
+<div class="success-panel panel">
+  <div class="success-icon">✓</div>
+  <h1>Pedido registrado #{{p.id}}</h1>
+  <p>Gracias {{p.cliente}}. Recibimos tu pedido y se verificará el pago para confirmar el despacho.</p>
+  <div class="pay-card"><b>Total:</b> {{p.total|money}}<br><b>Método:</b> {{p.metodo_pago}}<br><b>Estado:</b> {{p.estado}}</div>
+  <h3>Productos</h3>
+  {% for it in items %}<p>{{it.nombre}} · Talla {{it.talla}} · Cantidad {{it.cantidad}} · {{it.precio|money}}</p>{% endfor %}
+  <div class="hero-actions"><a class="btn" href="/">Volver a la tienda</a><a class="btn whatsapp-btn" target="_blank" href="https://wa.me/{{cfg.get('telefono_whatsapp','34638067232')}}?text=Hola%20Art%20Leandro%2C%20acabo%20de%20registrar%20el%20pedido%20%23{{p.id}}">Enviar comprobante por WhatsApp</a></div>
+</div>
+{% endblock %}

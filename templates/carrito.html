@@ -1,0 +1,7 @@
+{% extends 'base.html' %}{% block body %}
+<div class="page-title"><span class="eyebrow">Compra</span><h1>Carrito de compras</h1></div>
+<form method="post" action="{{url_for('actualizar_carrito')}}" class="cart-layout">
+  <div class="panel cart-panel">{% for it in items %}<div class="line"><img src="{{url_for('static',filename='uploads/productos/'+it.p.imagen)}}"><div><b>{{it.p.nombre}}</b><p>{{it.p.precio|money}} c/u<br><small>📏 Talla: {{it.talla}}</small></p></div><input type="number" name="qty_{{it.key}}" value="{{it.cantidad}}" min="0"><strong>{{it.subtotal|money}}</strong></div>{% else %}<p>Tu carrito está vacío.</p>{% endfor %}</div>
+  <aside class="panel summary"><h2>Resumen</h2><p>Total del pedido</p><strong>{{total|money}}</strong><button class="btn">Actualizar carrito</button><a class="btn alt" href="{{url_for('checkout')}}">Continuar compra</a><a class="btn ghost dark" href="/">Seguir comprando</a></aside>
+</form>
+{% endblock %}
